@@ -53,7 +53,8 @@ class MuReadout(Linear):
                     
     def forward(self, x):
         return super().forward(
-            self.output_mult * x / self.width_mult())
+            x ) * (self.output_mult / self.width_mult())
+            # self.output_mult * x / self.width_mult())
 
 
 class MuSharedReadout(MuReadout):
