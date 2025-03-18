@@ -115,7 +115,7 @@ class InfShape(tuple):
     def from_base_shape(cls, bsh):
         return InfShape([InfDim(bd, None) for bd in bsh])
 
-def zip_infshape(base_dims, dims, fin_if_same=True):
+def zip_infshape(base_dims, dims, fin_if_same=True, override_base_dim=None):
     infshape = []
     for bd, d in zip(base_dims, dims):
         if isinstance(bd, InfDim):
@@ -127,6 +127,8 @@ def zip_infshape(base_dims, dims, fin_if_same=True):
             if bd == d and fin_if_same:
                 infshape.append(InfDim(None, d))
             else:
+                if override_base_dim is not None:
+                    bd = override_base_dim
                 infshape.append(InfDim(bd, d))
         else:
             raise ValueError(f'unhandled base_dim type: {type(bd)}')

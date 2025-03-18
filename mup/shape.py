@@ -84,7 +84,7 @@ def _extract_shapes(x):
         raise ValueError(f'unhandled x type: {type(x)}')
     return x_shapes
 
-def _zip_infshape_dict(base_shapes, shapes):
+def _zip_infshape_dict(base_shapes, shapes, override_base_dim=None):
     '''make a dict of `InfShape` from two dicts of shapes.
     Inputs:
         base_shapes: dict of base shapes or InfShape objects
@@ -101,10 +101,10 @@ def _zip_infshape_dict(base_shapes, shapes):
     )
     infshapes = {}
     for name, bsh in base_shapes.items():
-        infshapes[name] = zip_infshape(bsh, shapes[name])
+        infshapes[name] = zip_infshape(bsh, shapes[name],override_base_dim=override_base_dim)
     return infshapes
 
-def zip_infshapes(base, target):
+def zip_infshapes(base, target, override_base_dim=None):
     '''make a dict of `InfShape` from models or dicts.
     Inputs:
         base: a base `nn.Module` or a dict of shapes
@@ -114,7 +114,7 @@ def zip_infshapes(base, target):
     '''
     base_shapes = _extract_shapes(base)
     target_shapes = _extract_shapes(target)
-    return _zip_infshape_dict(base_shapes, target_shapes)
+    return _zip_infshape_dict(base_shapes, target_shapes,  override_base_dim=override_base_dim)
 
 def clear_dims(infshape_dict):
     '''
@@ -156,7 +156,7 @@ def apply_infshapes(model, infshapes):
     for name, p in model.named_parameters():
         p.infshape = infshapes[name]
 
-def set_base_shapes(model, base, rescale_params=True, delta=None, savefile=None, do_assert=True):
+def set_base_shapes(model, base, rescale_params=True, delta=None, savefile=None, do_assert=True, override_base_dim=None):
     '''Sets the `p.infshape` attribute for each parameter `p` of `model`.
 
     Inputs:
@@ -178,9 +178,9 @@ def set_base_shapes(model, base, rescale_params=True, delta=None, savefile=None,
     base_shapes = _extract_shapes(base)
     if delta is not None:
         delta_shapes = _extract_shapes(delta)
-        base_shapes = _zip_infshape_dict(base_shapes, delta_shapes)
+        base_shapes = _zip_infshape_dict(base_shapes, delta_shapes, override_base_dim=override_base_dim)
     shapes = get_shapes(model)
-    infshapes = _zip_infshape_dict(base_shapes, shapes)
+    infshapes = _zip_infshape_dict(base_shapes, shapes, override_base_dim=override_base_dim)
     if savefile is not None:
         save_base_shapes(infshapes, savefile)
     apply_infshapes(model, infshapes)
